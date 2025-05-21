@@ -1,19 +1,23 @@
-from dash import Dash, html
-from aufgabe1.cleaning import clean_data
+from dash import Dash, html, dcc
+import dash
 
-# Initialize Dash app
-app = Dash(__name__)
-
-# Load cleaned dataset
-df = clean_data("aufgabe1/data/Praktikum-1-test-1-init.csv")
-
-# Define app layout
+app = Dash(__name__, use_pages=True)
 app.layout = html.Div([
-    html.H1("Data Preview"),
-    html.P(f"Number of rows: {len(df)}"),
-    html.P(f"Number of columns: {len(df.columns)}"),
+    html.H1("Praktikum Task 1 - Interactive Dashboard"),
+    dcc.Link("Home", href="/"),
+    html.Br(),
+    dcc.Link("Aufgabe 1", href="/aufgabe1"),
+    html.Br(),
+    dcc.Link("Aufgabe 2", href="/aufgabe2"),
+    html.Br(),
+    dcc.Link("Aufgabe 3", href="/aufgabe3"),
+    html.Br(),
+    dcc.Link("Aufgabe 4", href="/aufgabe4"),
+    html.Br(),
+    dcc.Link("Aufgabe 5", href="/aufgabe5"),
+    html.Hr(),
+    dash.page_container
 ])
 
-# Run the app
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run(debug=True)
