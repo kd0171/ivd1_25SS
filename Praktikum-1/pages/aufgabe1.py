@@ -24,13 +24,15 @@ layout = html.Div([
 
     html.P(f"Number of rows after cleaning: {len(df)}"),
     html.P(f"Number of columns: {len(df.columns)}"),
-
+        
     html.H4("Data Cleaning Steps"),
     html.Ul([
         html.Li("Column names were stripped of spaces and single quotes."),
-        html.Li("String values in each column were cleaned of leading/trailing spaces and single quotes."),
+        html.Li("String values in each cell were cleaned of leading/trailing spaces and single quotes."),
         html.Li("Columns starting with 'Unnamed' were removed."),
-        html.Li("Rows with any missing values were dropped."),
+        html.Li("If the 'Nationality' column contains a position (e.g. 'ST', 'GK', etc.), "
+                "values from that column onward are shifted left until 'Nationality' is no longer a position."),
+        html.Li("No rows were dropped; partial data is preserved."),
     ]),
 
     html.H4("Preview of Cleaned Data"),
