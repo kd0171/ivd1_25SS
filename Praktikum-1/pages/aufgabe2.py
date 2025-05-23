@@ -9,7 +9,7 @@ from datamining.aufgabe2.graphing import (
 
 dash.register_page(__name__, path="/aufgabe2")
 
-df = pd.read_csv("./processed/cleaned_data.csv")
+df = pd.read_csv("./data/processed/cleaned_data.csv")
 
 layout = html.Div([
     html.H2("Aufgabe 2 - Data Visualization"),

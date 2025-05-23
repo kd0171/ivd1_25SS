@@ -1,66 +1,39 @@
 import pandas as pd
 
 def load_and_clean_data(path, save_to=None):
-    # Load the CSV file
-    df = pd.read_csv(path)
-    
-    # Strip extra quotes and whitespace from column names
+    try:
+        # Read CSV using single quote as quote character to preserve values like 'CF,ST'
+        df = pd.read_csv(path, quotechar="'")
+    except Exception as e:
+        print(f"[ERROR] Failed to read CSV file: {e}")
+        print("Preview of first 10 lines for debugging:\n")
+        with open(path, 'r', encoding='utf-8') as f:
+            for i, line in enumerate(f.readlines()):
+                print(f"{i+1}: {line.strip()}")
+                if i >= 9:
+                    break
+        raise e
+
+    # Step 1: Convert 'Positions Played' to a list of positions
+    if "Positions Played" in df.columns:
+        df["Positions List"] = df["Positions Played"].apply(
+            lambda x: [item.strip().replace("'", "") for item in x.split(",")] if isinstance(x, str) else []
+        )
+
+    # Step 2: Clean column names (remove leading/trailing spaces and single quotes)
     df.columns = df.columns.str.strip().str.replace("'", "")
 
-    # Strip extra quotes and whitespace from string-type cells
+    # Step 3: Clean string cells in each column (remove leading/trailing spaces and single quotes)
     for col in df.select_dtypes(include='object').columns:
+        if col == "Positions List":
+            continue  # Skip cleaning list-type column
         df[col] = df[col].str.strip().str.replace("'", "")
 
-    # Drop unnecessary columns that start with 'Unnamed'
+    # Step 4: Remove unnecessary columns that start with 'Unnamed'
     df = df.loc[:, ~df.columns.str.startswith("Unnamed")]
 
-    # --- Begin: Repeatedly shift left if 'Nationality' contains a position ---
-    # Define the set of valid football position abbreviations
-    positions = {
-        "GK", "CB", "RB", "LB", "RWB", "LWB",
-        "DM", "CDM", "CM", "AM", "CAM",
-        "RM", "LM", "RW", "LW", "CF",
-        "RF", "LF", "ST", "SW"
-    }
-
-    # Get list of column names to preserve their original order
-    column_list = list(df.columns)
-
-    # Convert all columns to 'object' type to allow mixing strings and numbers safely
-    df[column_list] = df[column_list].astype("object")
-
-    # Proceed only if 'Nationality' column exists
-    if "Nationality" in df.columns:
-        # Get the index position of the 'Nationality' column
-        nationality_idx = column_list.index("Nationality")
-
-        # Iterate through each row in the DataFrame
-        for index in df.index:
-            while True:
-                # Get the current value in the 'Nationality' column
-                current_val = df.at[index, "Nationality"]
-
-                # If the value is a position (e.g., 'ST', 'GK'), shift values to the left
-                if isinstance(current_val, str) and current_val.strip() in positions:
-                    # Shift all values one column to the left, starting from 'Nationality'
-                    for j in range(nationality_idx + 1, len(column_list)):
-                        left_col = column_list[j - 1]
-                        right_col = column_list[j]
-                        value_to_move = df.at[index, right_col]
-                        # Assign the value, converting to string if needed
-                        df.at[index, left_col] = value_to_move if pd.isna(value_to_move) else str(value_to_move)
-                    # Note: The last column will remain unchanged on each shift
-                else:
-                    # Exit loop when 'Nationality' no longer contains a position
-                    break
-
-    # --- End shift on Nationality column ---
-
-    # Optional: Drop rows with any missing values
-    # df = df.dropna()
-
-    # Save cleaned data to a new file if a path is provided
+    # Step 5: Save the cleaned data to a file if requested
     if save_to:
         df.to_csv(save_to, index=False)
-    
+
     return df
